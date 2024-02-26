@@ -4,6 +4,7 @@ const cors = require("cors");
 const port = process.env.PORT || 3000;
 require("dotenv").config();
 // console.log(process.env);
+const path = require("path");
 
 //middleware
 app.use(express.json());
@@ -35,7 +36,7 @@ async function run() {
     const jobsCollections = db.collection("demoJobs");
 
     //post a job
-    app.post("/post-job", async (req, res) => {
+    app.post("/api/post-job", async (req, res) => {
       const body = req.body;
       body.createAt = new Date();
       const result = await jobsCollections.insertOne(body);
@@ -50,13 +51,13 @@ async function run() {
     });
 
     //get all JObs
-    app.get("/all-jobs", async (req, res) => {
+    app.get("/api/all-jobs", async (req, res) => {
       const jobs = await jobsCollections.find({}).toArray();
       res.send(jobs);
     });
 
     // get single jobs using id
-    app.get("/all-jobs/:id", async (req, res) => {
+    app.get("/api/all-jobs/:id", async (req, res) => {
       const id = req.params.id;
       const job = await jobsCollections.findOne({
         _id: new ObjectId(id),
@@ -65,7 +66,7 @@ async function run() {
     });
 
     //get jobs by email
-    app.get("/myJobs/:email", async (req, res) => {
+    app.get("/api/myJobs/:email", async (req, res) => {
       // console.log(req.params.email)
       const jobs = await jobsCollections
         .find({ postedBy: req.params.email })
@@ -74,7 +75,7 @@ async function run() {
     });
 
     //delete a jobs
-    app.delete("/job/:id", async (req, res) => {
+    app.delete("/api/job/:id", async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
       const result = await jobsCollections.deleteOne(filter);
@@ -82,7 +83,7 @@ async function run() {
     });
 
     //update a jobs
-    app.patch("/update-job/:id", async (req, res) => {
+    app.patch("/api/update-job/:id", async (req, res) => {
       const id = req.params.id;
       const jobData = req.body;
       const filter = { _id: new ObjectId(id) };
@@ -112,9 +113,24 @@ async function run() {
 }
 run().catch(console.dir);
 
-app.get("/", (req, res) => {
-  res.send("Hello rld!");
-});
+// for deployment
+const __dirName = path.resolve();
+// get the current working directory's parent directory
+const rootDir = path.resolve(__dirName, "..");
+if (process.env.NODE_ENV === "production") {
+  app.use(express.static(path.join(rootDir, "/job-Portal-client/build")));
+  app.get("*", (req, res) => {
+    // console.log(__dirName);
+    res.sendFile(
+      path.resolve(rootDir, "job-Portal-client", "build", "index.html")
+    );
+  });
+
+} else {
+  app.get("/", (req, res) => {
+    res.send("The server is running in development mode.");
+  });
+}
 
 app.listen(port, () => {
   console.log(`Example app listening on port ${port}`);

@@ -32,7 +32,7 @@ const UpdateJob = () => {
   const onSubmit = (data) => {
     data.skills = selectedOption;
     // console.log(data);
-    fetch(`http://localhost:3000/update-job/${id}`, {
+    fetch(`http://localhost:3000/api/update-job/${id}`, {
       method: "PATCH",
       headers: { "content-type": "application/json" },
       body: JSON.stringify(data),

@@ -22,7 +22,7 @@ const Home = () => {
 
   useEffect(() => {
     // fetch("jobs.json")
-    fetch("http://localhost:3000/all-jobs")
+    fetch("http://localhost:3000/api/all-jobs")
       .then((res) => res.json())
       .then((data) => {
         setJobs(data);
